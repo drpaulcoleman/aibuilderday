@@ -24,6 +24,23 @@ All build artifacts, the Salesforce DX project, and metadata live in `./build/`.
 
 ---
 
+## Legal Requirements Impacting Build
+
+Full statute text saved in `docs/legal-reference.md`. Key findings that change the data model and flows:
+
+1. **72-hour clock excludes Saturdays, Sundays, and STATE holidays** — not just business hours. Need a formula or flow that accounts for this correctly. For the hackathon, a simplified formula (skip weekends) is sufficient; state holidays are a stretch goal.
+2. **Patient rights — phone call within 3 hours of arrival** — need a Task/milestone on the Commitment record.
+3. **Discharge instructions are mandatory** — must be documented including patient refusals. Add a `Discharge_Instructions_Status__c` field.
+4. **48-hour post-discharge follow-up** — LMHA must attempt contact. Schedule a follow-up Task.
+5. **Court hearing within 10 calendar days of examiner appointment** — track on White_Sheet__c.
+6. **Commitment max 6 months; renewal 2 weeks before expiry** — `Renewal_Date__c` formula and renewal alerts.
+7. **Two designated examiners required** — track on White_Sheet__c (Examiner_1__c, Examiner_2__c, Exam_Date_1__c, Exam_Date_2__c).
+8. **Clear and convincing evidence standard** — informational only, but include in generated court summaries.
+9. **Blue Sheet (34-1) requires TWO signers**: informant (front) + certifying physician (back). Pink Sheet (34-2) requires ONE signer: peace officer or mental health officer.
+10. **Officer discretion NOT to commit** — if exercised, must document. Add `Officer_Discretion_Exercised__c` checkbox + `Discretion_Reason__c` on Pink Sheet.
+
+---
+
 ## Phase 1: Data Model (Hours 0–3)
 
 ### Custom Objects
@@ -37,32 +54,70 @@ All build artifacts, the Salesforce DX project, and metadata live in `./build/`.
 | `LMHA__c` | Reference table of Local Mental Health Authorities |
 
 ### Key Fields — Commitment__c
-- `Status__c` (Picklist: Emergency Hold / Court Hearing Pending / Committed / Discharged)
+- `Status__c` (Picklist: Emergency Hold / Court Hearing Pending / Committed / Voluntary / Discharged)
 - `Hold_Start__c` (DateTime — set by Flow on Blue/Pink Sheet submission)
-- `Hold_Expires__c` (Formula: Hold_Start + 72 business hours)
+- `Hold_Expires__c` (Formula: Hold_Start + 72 hrs excluding weekends; simplified for hackathon)
 - `Hours_Remaining__c` (Formula: business-hour-aware countdown)
 - `County__c` (Picklist — for agent queries)
 - `Assigned_Caseworker__c` (Lookup → User)
+- `Patient_Name__c` (Text — denormalized for quick display)
+- `Patient_DOB__c` (Date)
+- `Phone_Call_Completed__c` (Checkbox — patient's 3-hour phone right)
+- `Phone_Call_Deadline__c` (Formula: Hold_Start + 3 hours)
+- `Discharge_Date__c` (DateTime)
+- `Discharge_Instructions_Status__c` (Picklist: Pending / Provided / Refused)
+- `Follow_Up_Due__c` (Formula: Discharge_Date + 48 hours)
+- `Follow_Up_Completed__c` (Checkbox)
 - `Related_Blue_Sheet__c`, `Related_Pink_Sheet__c`, `Related_White_Sheet__c` (Lookups)
 
-### Key Fields — Blue_Sheet__c (Form 34-1)
-- `Proposed_Patient_Name__c`, `Applicant_Name__c`, `Applicant_Address__c`
-- `Certifying_Physician__c`, `Examination_Date__c`
-- `Condition_Description__c` (Long Text)
+### Key Fields — Blue_Sheet__c (Form 34-1 — With Certification)
+Per statute: requires (a) informant application + (b) physician/DE certification
+- `Proposed_Patient_Name__c` (Text)
+- `Applicant_Name__c` (Text — the informant/responsible individual)
+- `Applicant_Address__c` (Text)
+- `Applicant_Relationship__c` (Text — relationship to patient)
+- `Condition_Description__c` (Long Text — "circumstances which lead to belief")
+- `Certifying_Physician__c` (Text — physician/PA/NP/DE who examined)
+- `Certifier_Title__c` (Picklist: Physician / PA / NP / Designated Examiner)
+- `Examination_Date__c` (Date — must be within 3 days preceding certification)
+- `Certification_Opinion__c` (Long Text — pertinent data obtained)
 - `LMHA__c` (Lookup)
-- `Guardian_Name__c`, `Guardian_Phone__c`, `Family_Name__c`, `Family_Phone__c`
+- `Guardian_Name__c`, `Guardian_Phone__c`, `Guardian_Address__c`
+- `Family_Name__c`, `Family_Phone__c`, `Family_Address__c`
+- `Other_Contact_Name__c`, `Other_Contact_Phone__c`, `Other_Contact_Address__c`
 
-### Key Fields — Pink_Sheet__c (Form 34-2)
-- `Officer_Name__c`, `Officer_Phone__c`, `Officer_Badge__c`
-- `Facts_Statement__c`, `Nature_of_Danger__c`, `Observation_Summary__c` (Long Text fields)
+### Key Fields — Pink_Sheet__c (Form 34-2 — Without Certification)
+Per statute: peace officer or mental health officer observation + application
+- `Proposed_Patient_Name__c` (Text)
+- `Officer_Name__c` (Text)
+- `Officer_Phone__c` (Phone)
+- `Officer_Type__c` (Picklist: Peace Officer / Mental Health Officer)
+- `Facts_Statement__c` (Long Text — "facts which called patient to attention")
+- `Nature_of_Danger__c` (Long Text — "specific nature of the danger")
+- `Observation_Summary__c` (Long Text — "summary of observations")
+- `Officer_Discretion_Exercised__c` (Checkbox — per 26B-5-331(5)(b))
+- `Discretion_Reason__c` (Long Text — required if discretion exercised)
 - `LMHA__c` (Lookup)
-- Same contact notification fields
+- `Guardian_Name__c`, `Guardian_Phone__c`, `Guardian_Address__c`
+- `Family_Name__c`, `Family_Phone__c`, `Family_Address__c`
+- `Other_Contact_Name__c`, `Other_Contact_Phone__c`, `Other_Contact_Address__c`
 
-### Key Fields — White_Sheet__c (Court Order)
-- `Court_Case_Number__c`, `Judge_Name__c`, `Order_Date__c`
-- `Commitment_Duration_Days__c` (Number: 30/60/90)
-- `Renewal_Date__c` (Formula)
+### Key Fields — White_Sheet__c (Court Order — 26B-5-332)
+- `Court_Case_Number__c` (Text)
+- `Judge_Name__c` (Text)
+- `Order_Date__c` (Date)
+- `Commitment_Duration_Days__c` (Number: 30/60/90/180)
+- `Commitment_Expiry__c` (Formula: Order_Date + Duration)
+- `Renewal_Date__c` (Formula: Expiry - 14 days — per statute, court notifies 2 weeks before)
+- `Examiner_1_Name__c` (Text)
+- `Examiner_1_Date__c` (Date)
+- `Examiner_2_Name__c` (Text)
+- `Examiner_2_Date__c` (Date)
+- `Hearing_Date__c` (Date — must be within 10 calendar days of examiner appointment)
+- `Hearing_Outcome__c` (Picklist: Committed / Dismissed / Assisted Outpatient)
+- `Commitment_Type__c` (Picklist: Initial / Renewal / Indeterminate)
 - `Source_System__c` (Text, default "XChange/CORIS via MuleSoft")
+- `County__c` (Text — county where patient resides or is found)
 
 ---
 
