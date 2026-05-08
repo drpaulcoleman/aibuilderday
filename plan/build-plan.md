@@ -69,11 +69,11 @@ This matters for the hackathon because:
 **Demo Lead / Presenter** — You own the final 4 minutes. You rehearse the live demo repeatedly, know every click by muscle memory, have fallback plans if something fails live, and manage timing ruthlessly. You load the seed data that sets up the perfect demo scenario. You may be the same person as the Documentarian, or a different person who is the strongest presenter on the team.
 
 ### Role Overlap Rules
-- Any team member can seed data or fix fields — these are low-conflict
-- Flows and Agentforce config are high-conflict in the org — only one person at a time
-- Lightning pages can be built in parallel (different pages) but deploy carefully
-- The Demo Lead owns the "golden path" — everyone tests against their scenarios
-- The Documentarian works independently of the org — no conflicts with builders
+- Any team member can seed data or fix fields in their own sandbox — zero conflict
+- With individual sandboxes, Flows and Lightning pages can be built in full parallel
+- **Agentforce config is the one exception** — it lives only in the parent org, so the AI/Agent person works there directly. Coordinate if others need to test agent behavior.
+- The Demo Lead owns the "golden path" — everyone tests against their scenarios in the parent org
+- The Documentarian works independently of any org — no conflicts with builders
 
 ### Solo / Small Team Guidance
 - **1 person**: Follow phases sequentially; prioritize Blue Sheet flow + countdown + 1 Agentforce query
@@ -96,35 +96,72 @@ A Salesforce "org" (organization) is a single instance of the Salesforce platfor
 - **Instance**: SDB6 (standard test instance, NOT Gov Cloud — Gov Cloud is pitch-only)
 - **URL**: `https://orgfarm-23ada909fc.test1.my.pc-rnd.salesforce.com`
 
-### Development Strategy: Single Shared Org
+### Development Strategy: Individual Developer Sandboxes
 
-For a 24-hour hackathon with a trial org, **everyone works in the same org**. No scratch orgs, no sandboxes. Rationale:
-- Trial orgs can't spawn sandboxes
-- Scratch org provisioning wastes precious hackathon hours
-- Agentforce configuration is org-specific and hard to move via metadata
-- The org expires in ~19 days anyway — it's disposable
+The parent org has **Developer Sandbox licenses available** (34 of 35 free). Each team member gets their own sandbox — an isolated copy of the org where they can build without affecting anyone else.
 
-**What this means practically**: when you make a change in the Salesforce UI, everyone sees it immediately. There's no "my copy" vs "your copy." This is why role ownership and communication matter — if two people edit the same Flow simultaneously, one person's changes will overwrite the other's.
+```
+aibuilder (parent org)         ← "production" — the demo target
+├── sandbox: paul              ← Paul's dev environment
+├── sandbox: sarah             ← Sarah's dev environment
+├── sandbox: james             ← James's dev environment
+└── ...                        ← one per team member
+```
 
-### Conflict Mitigation
-| Risk | Mitigation |
-|------|-----------|
-| Two people editing the same Flow | **Assign flows by name** — each person owns specific flows (see Phase 2 table) |
-| Metadata drift between git and org | **Deploy-from-source is authoritative** — always `sf project deploy` from git, never rely solely on Setup UI changes |
-| Field/object changes conflict | **Data Architect deploys objects first** — others wait until Phase 1 complete before building flows |
-| Agentforce config not in metadata | **Agent config is manual in Setup** — document steps in `./build/scripts/agentforce-setup.md` for reproducibility |
-| Someone breaks demo data | **Seed data is idempotent** — re-runnable import script in `./build/scripts/seed-data.sh` |
+**What this means practically**:
+- You can break things freely in your sandbox without affecting teammates
+- No more "two people editing the same Flow" conflicts — each person has their own copy
+- When your work is ready, you deploy from git → parent org (the demo target)
+- Source tracking works per-sandbox — `sf project retrieve` gives you only YOUR changes
+- The parent org (`aibuilder`) stays clean and is used only for the final demo
 
-### Auth: Everyone Authenticates Independently
-
-Each team member needs their own CLI session pointing to the shared org:
+### Sandbox Setup (Each Team Member)
 
 ```bash
-# This opens a browser window to log in. Use the same credentials everyone shares.
+# 1. Create your sandbox (already done via Setup UI, or via CLI):
+sf org create sandbox --name <yourname> --alias <yourname>-sbx -o aibuilder -l Developer
+
+# 2. Authenticate to your sandbox once it's ready (Status: Completed):
+sf org login web -a <yourname>-sbx -r https://orgfarm-23ada909fc--<yourname>.sandbox.my.pc-rnd.salesforce.com
+
+# 3. Open your sandbox in a browser:
+sf org open -o <yourname>-sbx
+
+# 4. Deploy the current data model to your sandbox:
+sf project deploy start -o <yourname>-sbx -d ./build/force-app
+```
+
+**Sandbox provisioning takes 5–30 minutes.** Kick this off at the start of the hackathon while you're reading docs and planning. Developer sandboxes copy metadata (objects, flows, pages) but NOT data — you'll need to load seed data separately.
+
+### Org Roles
+
+| Org | Purpose | Who Deploys Here |
+|-----|---------|-----------------|
+| `aibuilder` (parent) | Final demo target; Agentforce config lives here | Data Architect deploys from `main`; Demo Lead loads seed data |
+| `<name>-sbx` (sandboxes) | Individual development & testing | Each team member deploys to their own |
+
+### Conflict Mitigation
+
+| Risk | Mitigation |
+|------|-----------|
+| Two people editing the same Flow | **Each person has their own sandbox** — no conflicts possible during development |
+| Metadata drift between git and parent org | **Git is authoritative** — the parent org only receives deploys from `main` branch |
+| Merge conflicts in metadata XML | Resolved by the person who owns that component; sandboxes mean you can test your resolution before deploying |
+| Agentforce config not in metadata | **Agentforce is configured in the parent org only** — AI/Agent person works directly there (see Phase 4). Document steps for reproducibility. |
+| Someone breaks demo data | **Seed data is idempotent** — re-runnable script in `./build/scripts/seed-data.sh` targets parent org only |
+| Sandbox is stale (missing objects/fields) | Re-deploy from `main`: `sf project deploy start -o <yourname>-sbx -d ./build/force-app` |
+
+### Auth: Each Team Member Authenticates to Their Sandbox
+
+```bash
+# Authenticate to your personal sandbox:
+sf org login web -a <yourname>-sbx -r https://orgfarm-23ada909fc--<yourname>.sandbox.my.pc-rnd.salesforce.com
+
+# Also authenticate to the parent org (for final deploys):
 sf org login web -a aibuilder -r https://orgfarm-23ada909fc.test1.my.pc-rnd.salesforce.com
 ```
 
-After login, the CLI stores a token locally. You won't need to log in again unless the token expires (usually 24+ hours). The `-a aibuilder` flag sets the alias so all future commands can use `-o aibuilder` to target this org.
+After login, the CLI stores tokens locally. Use `-o <yourname>-sbx` for your dev work and `-o aibuilder` only when deploying to the demo target.
 
 ---
 
@@ -225,7 +262,7 @@ sf org open -o aibuilder
 | Layouts | Einstein/Data Cloud config |
 | Static resources | Custom notifications setup |
 
-**Why some things are "org-only"**: Certain Salesforce features (especially newer AI features like Agentforce) don't fully support metadata deployment. They must be configured through the browser UI. We document these steps in markdown files so they're reproducible if the org is ever recreated.
+**Why some things are "org-only"**: Certain Salesforce features (especially newer AI features like Agentforce) don't fully support metadata deployment. They must be configured through the browser UI **in the parent org** — they don't propagate to sandboxes and can't be deployed from git. We document these steps in markdown files so they're reproducible if the org is ever recreated.
 
 ---
 
@@ -280,47 +317,58 @@ You can write these by hand (or have AI generate them), then deploy them to the 
 
 ### What Is Source Tracking?
 
-Source tracking is a feature where Salesforce remembers what you've deployed and what's changed since. It answers: "what's different between my local files and what's in the org?" This is critical when multiple people share an org — it's how you pull down changes others made in the UI.
+Source tracking is a feature where Salesforce remembers what you've deployed and what's changed since. It answers: "what's different between my local files and what's in the org?" With individual sandboxes, source tracking is much simpler — your sandbox only contains YOUR changes, so there are no surprises from other team members.
 
-### Enable Source Tracking
-The `aibuilder` org supports source tracking (non-sandbox EE trial with API access). Use it to stay in sync when team members make changes in Setup UI:
+### Source Tracking with Sandboxes
+
+Developer sandboxes support source tracking natively. Each sandbox tracks changes independently:
 
 ```bash
-# Track what changed in the org since last deploy:
-sf project retrieve start -o aibuilder --ignore-conflicts
+# See what's changed in YOUR sandbox since last deploy:
+sf project retrieve start -o <yourname>-sbx
 
-# See what's changed locally vs org:
-sf project deploy preview -o aibuilder
+# Preview what would deploy from your local files:
+sf project deploy preview -o <yourname>-sbx
 
-# After someone makes manual changes in org (e.g., Agentforce, dashboards):
-sf project retrieve start -o aibuilder -m "Flow:Blue_Sheet_Filing"
+# Retrieve a specific flow you built in the UI:
+sf project retrieve start -o <yourname>-sbx -m "Flow:Blue_Sheet_Filing"
 
 # Retrieve a specific object's changes:
-sf project retrieve start -o aibuilder -m "CustomObject:Commitment__c"
+sf project retrieve start -o <yourname>-sbx -m "CustomObject:Commitment__c"
 ```
 
 ### Source Tracking Rules for the Team
-1. **Before starting work**: `git pull` + `sf project retrieve start` to catch org-side changes
-2. **After making Setup UI changes**: retrieve immediately and commit to your branch
+1. **All dev work happens in your sandbox** — never build directly in the parent org (except Agentforce config)
+2. **After making Setup UI changes in your sandbox**: retrieve immediately and commit to your branch
 3. **Flows built in Setup UI**: retrieve the flow XML immediately → commit → push
-4. **Conflicts**: if `sf project deploy` fails with conflicts, the component owner resolves
-5. **Nuclear option**: if source tracking gets hopelessly confused, `sf project deploy start --ignore-conflicts` (Data Architect decision only)
+4. **Deploying to parent org**: only from `main` branch after PR merge — this keeps the demo target stable
+5. **Sandbox is stale?** Re-deploy from git: `sf project deploy start -o <yourname>-sbx -d ./build/force-app`
 
-### Daily Rhythm (for each team member)
+### Development Rhythm (for each team member)
 ```bash
 # START OF WORK SESSION:
-git checkout main && git pull           # Get latest from team
-git checkout feat/my-branch             # Switch to my branch
-git merge main                          # Incorporate team changes
-sf project retrieve start -o aibuilder  # Get any UI changes from org
+git checkout main && git pull                           # Get latest from team
+git checkout feat/my-branch                             # Switch to my branch
+git merge main                                          # Incorporate team changes
+sf project deploy start -o <yourname>-sbx -d ./build/force-app  # Sync sandbox with latest metadata
 
-# ... do your work ...
+# ... do your work (in sandbox UI or by writing metadata locally) ...
 
 # END OF WORK SESSION:
-sf project retrieve start -o aibuilder  # Capture anything you did in UI
-git add . && git commit -m "..."        # Commit locally
-git push                                # Push to remote
+sf project retrieve start -o <yourname>-sbx             # Capture anything you did in sandbox UI
+git add . && git commit -m "..."                        # Commit locally
+git push                                                # Push to remote
 # Create PR when phase is complete
+```
+
+### Promoting to the Parent Org (Demo Target)
+```bash
+# After PR is merged to main:
+git checkout main && git pull
+sf project deploy start -o aibuilder -d ./build/force-app
+
+# Verify in browser:
+sf org open -o aibuilder
 ```
 
 ### What to Track vs. Ignore
@@ -774,22 +822,32 @@ Judges will evaluate vision + feasibility + demo quality. They understand not ev
 Every team member does this at the start:
 
 ```bash
-# 1. Clone repo and create SFDX project
+# 1. Clone repo and navigate in (the SFDX project is already in ./build/)
 git clone <repo-url> && cd aibuilderday
-sf project generate -n build -d ./build/
 
-# 2. Everyone authenticates to the shared org
+# 2. Authenticate to the parent org (needed for sandbox creation and final deploys)
 sf org login web -a aibuilder -r https://orgfarm-23ada909fc.test1.my.pc-rnd.salesforce.com
 
-# 3. Verify access and enable source tracking
-sf org open -o aibuilder
-sf project retrieve start -o aibuilder  # baseline pull
+# 3. Create your personal Developer Sandbox (if not already created via Setup UI)
+sf org create sandbox --name <yourname> --alias <yourname>-sbx -o aibuilder -l Developer
+# ⏳ Wait 5-30 min for sandbox to provision. Do steps 4-5 while waiting.
 
 # 4. Each person creates their feature branch
 git checkout -b feat/<role-area>
+
+# 5. Once sandbox is ready, authenticate to it
+sf org login web -a <yourname>-sbx -r https://orgfarm-23ada909fc--<yourname>.sandbox.my.pc-rnd.salesforce.com
+
+# 6. Deploy the current metadata to your sandbox
+sf project deploy start -o <yourname>-sbx -d ./build/force-app
+
+# 7. Open your sandbox and verify
+sf org open -o <yourname>-sbx
 ```
 
-**If you've never used the SF CLI before**: the `sf org login web` command opens a browser. Log in with the shared credentials. The CLI stores a token. After that, all `sf` commands "just work" against the org.
+**If you've never used the SF CLI before**: the `sf org login web` command opens a browser. Log in with the shared credentials (for sandboxes, append your sandbox name to your username: `user@org.com.<sandboxname>`). The CLI stores a token. After that, all `sf` commands "just work."
+
+**While your sandbox provisions**: read the legal reference doc, explore the UI mockup, sketch your flow logic on paper, or help the Data Architect draft object metadata.
 
 ### Parallel Execution by Role
 
@@ -805,14 +863,15 @@ DEMO                               [██ seed data █ rehearse ██ GO]
 ```
 
 ### Critical Handoff Points
-1. **Hour 3**: Data Architect merges `feat/data-model` → main, deploys. Flows can begin.
-2. **Hour 8**: Flow Builder merges `feat/flows` → main, deploys. UX can reference flows on pages.
-3. **Hour 11**: UX merges `feat/lightning-ux` → main. Agent can reference pages/flows.
-4. **Hour 14**: Agent config complete in org. Retrieve + commit for reproducibility.
-5. **Hour 16**: Demo Lead loads seed data. Everyone verifies golden path works end-to-end.
-6. **Hour 20**: **CODE FREEZE.** Only bug fixes and demo polish after this point.
-7. **Hour 22**: Full dress rehearsal of 4-minute demo. Time it. Fix anything that's slow/broken.
-8. **Hour 24**: Present.
+1. **Hour 0**: Everyone creates sandbox + authenticates. Data Architect starts writing object metadata.
+2. **Hour 3**: Data Architect merges `feat/data-model` → main, deploys to **parent org**. Everyone pulls main and deploys to their sandboxes: `sf project deploy start -o <yourname>-sbx -d ./build/force-app`. Flows can begin.
+3. **Hour 8**: Flow Builder merges `feat/flows` → main, deploys to parent org. UX can now reference flows.
+4. **Hour 11**: UX merges `feat/lightning-ux` → main, deploys to parent org.
+5. **Hour 14**: Agent config complete in **parent org** (Agentforce is configured there directly). Retrieve + commit for reproducibility.
+6. **Hour 16**: Demo Lead loads seed data to **parent org**. Everyone verifies golden path end-to-end in parent.
+7. **Hour 20**: **CODE FREEZE.** Only bug fixes and demo polish after this point. All changes go through main → parent.
+8. **Hour 22**: Full dress rehearsal of 4-minute demo in parent org. Time it. Fix anything that's slow/broken.
+9. **Hour 24**: Present.
 
 ### What To Do If You're Blocked
 
@@ -825,7 +884,18 @@ DEMO                               [██ seed data █ rehearse ██ GO]
 | Git merge conflict in XML | The component owner resolves. For hackathon speed: take the newer version. |
 | Totally stuck on something | Ask the team. Ask the Salesforce mentors. Use Claude/AI to debug. Don't spend >30 min blocked silently. |
 
-### Deploy Commands (in order of dependency)
+### Deploy Commands
+
+**To your sandbox (during development):**
+```bash
+# Deploy everything to your sandbox:
+sf project deploy start -o <yourname>-sbx -d ./build/force-app
+
+# Deploy a specific component you're working on:
+sf project deploy start -o <yourname>-sbx -d ./build/force-app/main/default/flows
+```
+
+**To the parent org (after merging to main — in order of dependency):**
 ```bash
 # Phase 1 deploy (Data Architect):
 sf project deploy start -o aibuilder -d ./build/force-app/main/default/objects
@@ -840,49 +910,62 @@ sf project deploy start -o aibuilder -d ./build/force-app/main/default/flexipage
 sf project deploy start -o aibuilder -d ./build/force-app/main/default/applications
 sf project deploy start -o aibuilder -d ./build/force-app/main/default/layouts
 
-# Full deploy (any conflicts resolved):
+# Full deploy (all phases, any conflicts resolved):
 sf project deploy start -o aibuilder -d ./build/force-app
 
-# Seed data (Demo Lead):
+# Seed data (Demo Lead — parent org only):
 sf data import tree -o aibuilder -f ./build/data/plan.json
+```
+
+**Refresh your sandbox after someone else deploys to main:**
+```bash
+git checkout main && git pull
+git checkout feat/my-branch && git merge main
+sf project deploy start -o <yourname>-sbx -d ./build/force-app
 ```
 
 ---
 
 ## Quick Reference: Common SF CLI Commands
 
-For team members who are new to the Salesforce CLI:
+For team members who are new to the Salesforce CLI. Replace `<yourname>-sbx` with your sandbox alias:
 
 ```bash
-# Open the org in your browser
+# Open your sandbox in a browser (day-to-day development)
+sf org open -o <yourname>-sbx
+
+# Open the parent org (demo target, final verification)
 sf org open -o aibuilder
 
-# Deploy metadata from your local files to the org
+# Deploy metadata from your local files to your sandbox
+sf project deploy start -o <yourname>-sbx -d ./build/force-app
+
+# Deploy to parent org (after merge to main only)
 sf project deploy start -o aibuilder -d ./build/force-app
 
-# Retrieve metadata from the org to your local files
-sf project retrieve start -o aibuilder
+# Retrieve metadata from your sandbox to your local files
+sf project retrieve start -o <yourname>-sbx
 
-# Retrieve a specific component
-sf project retrieve start -o aibuilder -m "CustomObject:Commitment__c"
-sf project retrieve start -o aibuilder -m "Flow:Blue_Sheet_Filing"
-sf project retrieve start -o aibuilder -m "FlexiPage:Commitment_Record_Page"
+# Retrieve a specific component from your sandbox
+sf project retrieve start -o <yourname>-sbx -m "CustomObject:Commitment__c"
+sf project retrieve start -o <yourname>-sbx -m "Flow:Blue_Sheet_Filing"
+sf project retrieve start -o <yourname>-sbx -m "FlexiPage:Commitment_Record_Page"
 
-# Query data in the org (like SQL)
-sf data query -o aibuilder -q "SELECT Id, Patient_Name__c, Status__c FROM Commitment__c"
+# Query data in your sandbox (like SQL)
+sf data query -o <yourname>-sbx -q "SELECT Id, Patient_Name__c, Status__c FROM Commitment__c"
 
-# Create a single record
-sf data create record -o aibuilder -s Commitment__c -v "Patient_Name__c='John Doe' Status__c='Emergency Hold'"
+# Create a single record in your sandbox
+sf data create record -o <yourname>-sbx -s Commitment__c -v "Patient_Name__c='John Doe' Status__c='Emergency Hold'"
 
-# Import bulk data from JSON
-sf data import tree -o aibuilder -f ./build/data/plan.json
-
-# Delete all data for an object (careful!)
-sf data delete bulk -o aibuilder -s Commitment__c -f ./build/data/ids-to-delete.csv
+# Import bulk data from JSON (sandbox for testing, aibuilder for demo)
+sf data import tree -o <yourname>-sbx -f ./build/data/plan.json
 
 # Check deployment status
-sf project deploy report -o aibuilder
+sf project deploy report -o <yourname>-sbx
 
-# List all orgs you're authenticated to
+# List all orgs you're authenticated to (shows sandboxes + parent)
 sf org list
+
+# Check sandbox creation status
+sf org list --all
 ```

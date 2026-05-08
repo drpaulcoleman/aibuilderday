@@ -1,0 +1,14 @@
+# Salesforce CLI local state (auth tokens, org info — per-developer, never commit)
+.sfdx/
+.sf/
+
+# Local dev server
+.localdevserver/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/

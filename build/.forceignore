@@ -1,0 +1,22 @@
+# Profiles are noisy and org-specific
+**/profiles/**
+
+# Admin and standard users
+**/userPermissions/**
+
+# Org-specific settings that vary per sandbox
+**/settings/**
+
+# AI/Agent config that doesn't serialize cleanly (document manually instead)
+**/aiModels/**
+**/aiApplications/**
+
+# Standard objects we don't customize
+**/objects/Account/**
+**/objects/Contact/**
+**/objects/Case/**
+
+# IDE and OS files
+.sfdx
+.sf
+.localdevserver
