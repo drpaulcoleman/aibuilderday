@@ -909,13 +909,35 @@ const AGENT_RESPONSES = {
     }
 };
 
+function getPageFromHash() {
+    const hash = window.location.hash.slice(1);
+    const valid = ['home','commitments','record','bluesheet','pinksheet','dashboard'];
+    return valid.includes(hash) ? hash : 'home';
+}
+
 function App() {
-    const [currentPage, setCurrentPage] = useState('home');
+    const [currentPage, setCurrentPageRaw] = useState(getPageFromHash);
     const [agentOpen, setAgentOpen] = useState(false);
     const [toast, setToast] = useState(null);
     const [notification, setNotification] = useState(null);
     const [selectedCommitment, setSelectedCommitment] = useState(COMMITMENTS[0]);
     const [flowStep, setFlowStep] = useState(1);
+    const skipHashPush = useRef(false);
+
+    const setCurrentPage = (page) => {
+        setCurrentPageRaw(page);
+        skipHashPush.current = true;
+        window.history.pushState(null, '', '#' + page);
+    };
+
+    useEffect(() => {
+        const onPopState = () => {
+            skipHashPush.current = false;
+            setCurrentPageRaw(getPageFromHash());
+        };
+        window.addEventListener('popstate', onPopState);
+        return () => window.removeEventListener('popstate', onPopState);
+    }, []);
 
     const showToast = (msg, type='success') => {
         setToast({ msg, type });
