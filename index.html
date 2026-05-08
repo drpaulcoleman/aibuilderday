@@ -1,0 +1,1849 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guardian AI | Utah DHHS | Salesforce</title>
+    <link rel="stylesheet" href="https://unpkg.com/@salesforce-ux/design-system@2.24.4/assets/styles/salesforce-lightning-design-system.min.css">
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        :root {
+            --utah-navy: #1B2A4A;
+            --utah-blue: #0F4C81;
+            --utah-gold: #C8A951;
+            --utah-red: #BE1E2D;
+            --utah-sky: #4A90D9;
+            --sf-blue: #0176D3;
+            --sf-nav: #0B1D34;
+            --alert-red: #EA001E;
+            --alert-yellow: #FE9339;
+            --alert-green: #2E844A;
+            --countdown-bg: #1B2A4A;
+        }
+
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: 'Salesforce Sans', Arial, sans-serif; background: #f3f3f3; overflow-x: hidden; }
+
+        .sf-global-header {
+            background: var(--sf-nav);
+            height: 48px;
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 9999;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .sf-global-header .logo {
+            width: 36px;
+            height: 36px;
+            margin-right: 12px;
+            cursor: pointer;
+        }
+        .sf-global-header .app-name {
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            margin-right: 24px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .sf-global-header .app-name .utah-badge {
+            background: var(--utah-gold);
+            color: var(--utah-navy);
+            font-size: 9px;
+            font-weight: 800;
+            padding: 2px 6px;
+            border-radius: 3px;
+            letter-spacing: 0.5px;
+        }
+        .sf-global-header .search-bar {
+            flex: 1;
+            max-width: 480px;
+            margin: 0 auto;
+        }
+        .sf-global-header .search-bar input {
+            width: 100%;
+            height: 32px;
+            border-radius: 4px;
+            border: none;
+            padding: 0 12px 0 36px;
+            font-size: 13px;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            outline: none;
+            transition: background 0.2s;
+        }
+        .sf-global-header .search-bar input:focus {
+            background: #fff;
+            color: #333;
+        }
+        .sf-global-header .search-bar input::placeholder { color: rgba(255,255,255,0.6); }
+        .sf-global-header .search-bar input:focus::placeholder { color: #999; }
+        .sf-global-header .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: 16px;
+        }
+        .sf-global-header .header-actions button {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.8);
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: background 0.15s;
+        }
+        .sf-global-header .header-actions button:hover { background: rgba(255,255,255,0.1); }
+        .sf-global-header .header-actions .notif-badge {
+            position: relative;
+        }
+        .sf-global-header .header-actions .notif-badge::after {
+            content: '3';
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background: var(--alert-red);
+            color: #fff;
+            font-size: 9px;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .sf-global-header .avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--utah-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 11px;
+            font-weight: 700;
+            margin-left: 8px;
+            cursor: pointer;
+        }
+
+        .sf-nav-bar {
+            background: #fff;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            position: fixed;
+            top: 48px;
+            left: 0;
+            right: 0;
+            z-index: 9998;
+            border-bottom: 1px solid #e5e5e5;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .sf-nav-bar .nav-items {
+            display: flex;
+            gap: 0;
+            height: 100%;
+            align-items: stretch;
+        }
+        .sf-nav-bar .nav-item {
+            padding: 0 16px;
+            display: flex;
+            align-items: center;
+            font-size: 13px;
+            font-weight: 400;
+            color: #3e3e3c;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            text-decoration: none;
+            transition: color 0.15s;
+            white-space: nowrap;
+        }
+        .sf-nav-bar .nav-item:hover { color: var(--sf-blue); }
+        .sf-nav-bar .nav-item.active {
+            color: var(--sf-blue);
+            font-weight: 700;
+            border-bottom-color: var(--sf-blue);
+        }
+
+        .page-container {
+            margin-top: 88px;
+            padding: 12px 24px 24px;
+            min-height: calc(100vh - 88px);
+        }
+
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        .page-header h1 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #080707;
+            margin: 0;
+        }
+        .page-header .actions { display: flex; gap: 8px; }
+
+        .card {
+            background: #fff;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .card-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid #e5e5e5;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .card-header h2 {
+            font-size: 14px;
+            font-weight: 700;
+            color: #080707;
+            margin: 0;
+        }
+        .card-body { padding: 16px; }
+
+        .btn-brand {
+            background: var(--sf-blue);
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .btn-brand:hover { background: #014486; }
+        .btn-neutral {
+            background: #fff;
+            color: #3e3e3c;
+            border: 1px solid #c9c9c9;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+        .btn-neutral:hover { background: #f3f3f3; }
+        .btn-destructive {
+            background: var(--alert-red);
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-success {
+            background: var(--alert-green);
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .countdown-hero {
+            background: linear-gradient(135deg, var(--utah-navy) 0%, var(--utah-blue) 100%);
+            border-radius: 8px;
+            padding: 24px 32px;
+            color: #fff;
+            text-align: center;
+            margin-bottom: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+        .countdown-hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 300px;
+            height: 300px;
+            background: rgba(200,169,81,0.08);
+            border-radius: 50%;
+        }
+        .countdown-hero .countdown-value {
+            font-size: 56px;
+            font-weight: 800;
+            line-height: 1;
+            margin: 8px 0;
+            font-variant-numeric: tabular-nums;
+        }
+        .countdown-hero .countdown-label {
+            font-size: 13px;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .countdown-hero.urgent { background: linear-gradient(135deg, #7C0A02 0%, var(--alert-red) 100%); }
+        .countdown-hero.warning { background: linear-gradient(135deg, #7C4700 0%, var(--alert-yellow) 100%); }
+        .countdown-hero.safe { background: linear-gradient(135deg, #1A4A2A 0%, var(--alert-green) 100%); }
+
+        .progress-path {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            margin: 16px 0;
+            padding: 12px 16px;
+            background: #fff;
+            border-radius: 8px;
+            border: 1px solid #e5e5e5;
+        }
+        .progress-path .step {
+            flex: 1;
+            text-align: center;
+            padding: 8px 4px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #706e6b;
+            position: relative;
+            border-radius: 4px;
+        }
+        .progress-path .step.active {
+            background: var(--sf-blue);
+            color: #fff;
+        }
+        .progress-path .step.complete {
+            background: var(--alert-green);
+            color: #fff;
+        }
+        .progress-path .step-connector {
+            width: 20px;
+            height: 2px;
+            background: #c9c9c9;
+            flex-shrink: 0;
+        }
+        .progress-path .step-connector.complete { background: var(--alert-green); }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .data-table th {
+            background: #fafaf9;
+            padding: 8px 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #3e3e3c;
+            border-bottom: 1px solid #e5e5e5;
+            white-space: nowrap;
+        }
+        .data-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #f3f3f3;
+            color: #080707;
+        }
+        .data-table tr:hover td { background: #f3f3f3; }
+        .data-table .link { color: var(--sf-blue); cursor: pointer; text-decoration: none; }
+        .data-table .link:hover { text-decoration: underline; }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+        .badge-red { background: #FED8D8; color: #8C0006; }
+        .badge-yellow { background: #FFF1CD; color: #7C4700; }
+        .badge-green { background: #C8F0D4; color: #194E31; }
+        .badge-blue { background: #D1E8FF; color: #014486; }
+        .badge-gray { background: #ECEBEA; color: #3E3E3C; }
+
+        .utah-banner {
+            background: linear-gradient(90deg, var(--utah-navy) 0%, var(--utah-blue) 60%, var(--utah-sky) 100%);
+            padding: 8px 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #fff;
+            font-size: 11px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 10000;
+            height: 28px;
+        }
+        .utah-banner .beehive { font-size: 14px; }
+        .utah-banner .gov-text { opacity: 0.9; letter-spacing: 0.5px; }
+
+        .sf-global-header { top: 28px; }
+        .sf-nav-bar { top: 76px; }
+        .page-container { margin-top: 116px; }
+
+        .assistant-panel {
+            position: fixed;
+            right: 24px;
+            bottom: 24px;
+            width: 380px;
+            max-height: 560px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.1);
+            z-index: 9990;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid #e5e5e5;
+        }
+        .assistant-panel .panel-header {
+            background: linear-gradient(135deg, var(--utah-navy) 0%, var(--utah-blue) 100%);
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #fff;
+        }
+        .assistant-panel .panel-header .agent-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--utah-gold);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+        .assistant-panel .panel-header .agent-info h3 {
+            margin: 0;
+            font-size: 14px;
+            font-weight: 700;
+        }
+        .assistant-panel .panel-header .agent-info p {
+            margin: 0;
+            font-size: 11px;
+            opacity: 0.8;
+        }
+        .assistant-panel .panel-header .close-btn {
+            margin-left: auto;
+            background: none;
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            font-size: 18px;
+            opacity: 0.7;
+        }
+        .assistant-panel .panel-header .close-btn:hover { opacity: 1; }
+        .assistant-panel .chat-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-height: 380px;
+        }
+        .assistant-panel .chat-msg {
+            max-width: 85%;
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        .assistant-panel .chat-msg.agent {
+            background: #f3f3f3;
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+        .assistant-panel .chat-msg.user {
+            background: var(--sf-blue);
+            color: #fff;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+        .assistant-panel .chat-msg .urgency-card {
+            background: #fff;
+            border: 1px solid #e5e5e5;
+            border-left: 4px solid var(--alert-red);
+            border-radius: 4px;
+            padding: 8px 10px;
+            margin-top: 8px;
+            font-size: 12px;
+        }
+        .assistant-panel .chat-msg .urgency-card.yellow { border-left-color: var(--alert-yellow); }
+        .assistant-panel .chat-msg .urgency-card.green { border-left-color: var(--alert-green); }
+        .assistant-panel .chat-input {
+            border-top: 1px solid #e5e5e5;
+            padding: 12px 16px;
+            display: flex;
+            gap: 8px;
+        }
+        .assistant-panel .chat-input input {
+            flex: 1;
+            border: 1px solid #c9c9c9;
+            border-radius: 20px;
+            padding: 8px 16px;
+            font-size: 13px;
+            outline: none;
+        }
+        .assistant-panel .chat-input input:focus { border-color: var(--sf-blue); }
+        .assistant-panel .chat-input button {
+            background: var(--sf-blue);
+            border: none;
+            color: #fff;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .assistant-panel .suggested-prompts {
+            padding: 8px 16px 12px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .assistant-panel .suggested-prompts button {
+            background: #EEF4FF;
+            border: 1px solid #B9D4F5;
+            color: var(--sf-blue);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .assistant-panel .suggested-prompts button:hover { background: #D1E8FF; }
+
+        .agent-fab {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--utah-navy), var(--utah-blue));
+            border: none;
+            color: #fff;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+            z-index: 9989;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+        }
+        .agent-fab:hover { transform: scale(1.1); }
+        .agent-fab .pulse {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 2px solid var(--utah-gold);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+
+        .form-section {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #f3f3f3;
+        }
+        .form-section:last-child { border-bottom: none; }
+        .form-section h3 {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--utah-navy);
+            margin: 0 0 12px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .form-row.full { grid-template-columns: 1fr; }
+        .form-field label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #3e3e3c;
+            margin-bottom: 4px;
+        }
+        .form-field label .required { color: var(--alert-red); }
+        .form-field input, .form-field select, .form-field textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #c9c9c9;
+            border-radius: 4px;
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+        .form-field input:focus, .form-field select:focus, .form-field textarea:focus {
+            border-color: var(--sf-blue);
+            box-shadow: 0 0 0 2px rgba(1,118,211,0.15);
+        }
+        .form-field textarea { resize: vertical; min-height: 60px; }
+
+        .toast {
+            position: fixed;
+            top: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 24px;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 13px;
+            font-weight: 600;
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+            animation: slideDown 0.3s ease;
+        }
+        .toast.success { background: var(--alert-green); }
+        .toast.error { background: var(--alert-red); }
+        .toast.warning { background: var(--alert-yellow); color: #333; }
+        @keyframes slideDown {
+            from { transform: translateX(-50%) translateY(-20px); opacity: 0; }
+            to { transform: translateX(-50%) translateY(0); opacity: 1; }
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 16px;
+        }
+        .dashboard-grid .full-width { grid-column: 1 / -1; }
+
+        .chart-placeholder {
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .donut-chart {
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            position: relative;
+            background: conic-gradient(
+                var(--alert-red) 0deg 100deg,
+                var(--alert-yellow) 100deg 180deg,
+                var(--alert-green) 180deg 260deg,
+                var(--sf-blue) 260deg 320deg,
+                #ECEBEA 320deg 360deg
+            );
+        }
+        .donut-chart::after {
+            content: '';
+            position: absolute;
+            top: 30px; left: 30px; right: 30px; bottom: 30px;
+            background: #fff;
+            border-radius: 50%;
+        }
+        .donut-legend {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-left: 20px;
+            font-size: 12px;
+        }
+        .donut-legend .item { display: flex; align-items: center; gap: 6px; }
+        .donut-legend .dot { width: 10px; height: 10px; border-radius: 50%; }
+
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+            height: 160px;
+            padding: 0 20px;
+        }
+        .bar-chart .bar-col {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+        .bar-chart .bar {
+            width: 32px;
+            border-radius: 4px 4px 0 0;
+            background: var(--sf-blue);
+            transition: height 0.5s ease;
+        }
+        .bar-chart .bar-label { font-size: 10px; color: #706e6b; }
+
+        .notification-popup {
+            position: fixed;
+            top: 130px;
+            right: 24px;
+            width: 360px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+            border: 1px solid #e5e5e5;
+            border-left: 5px solid var(--alert-green);
+            z-index: 99998;
+            padding: 16px 20px;
+            animation: slideIn 0.4s ease;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .notification-popup h4 { margin: 0 0 8px; font-size: 14px; color: #080707; }
+        .notification-popup p { margin: 0 0 4px; font-size: 12px; color: #706e6b; }
+        .notification-popup .source { color: var(--sf-blue); font-weight: 600; font-size: 11px; }
+
+        .record-detail {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .record-detail .field { margin-bottom: 8px; }
+        .record-detail .field .label {
+            font-size: 11px;
+            color: #706e6b;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .record-detail .field .value {
+            font-size: 14px;
+            color: #080707;
+            font-weight: 500;
+            margin-top: 2px;
+        }
+
+        .timeline-item {
+            display: flex;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid #f3f3f3;
+        }
+        .timeline-item .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--sf-blue);
+            margin-top: 4px;
+            flex-shrink: 0;
+        }
+        .timeline-item .content { font-size: 13px; color: #3e3e3c; }
+        .timeline-item .content .time { font-size: 11px; color: #706e6b; margin-top: 2px; }
+
+        .mobile-form-warning {
+            background: #FFF7E5;
+            border: 1px solid var(--utah-gold);
+            border-radius: 6px;
+            padding: 10px 14px;
+            font-size: 12px;
+            color: #7C4700;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab-group {
+            display: flex;
+            border-bottom: 2px solid #e5e5e5;
+            margin-bottom: 16px;
+        }
+        .tab-group .tab {
+            padding: 10px 20px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #706e6b;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            transition: color 0.15s;
+        }
+        .tab-group .tab:hover { color: var(--sf-blue); }
+        .tab-group .tab.active {
+            color: var(--sf-blue);
+            border-bottom-color: var(--sf-blue);
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 20px 16px;
+        }
+        .stat-card .number {
+            font-size: 36px;
+            font-weight: 800;
+            color: var(--utah-navy);
+        }
+        .stat-card .label {
+            font-size: 12px;
+            color: #706e6b;
+            margin-top: 4px;
+        }
+        .stat-card.urgent .number { color: var(--alert-red); }
+        .stat-card.warning .number { color: var(--alert-yellow); }
+
+        .related-list-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 16px;
+            background: #fafaf9;
+            border-bottom: 1px solid #e5e5e5;
+        }
+        .related-list-header h3 {
+            font-size: 13px;
+            font-weight: 700;
+            margin: 0;
+            color: #3e3e3c;
+        }
+
+        .flow-screen {
+            max-width: 680px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 8px;
+            border: 1px solid #e5e5e5;
+            overflow: hidden;
+        }
+        .flow-header {
+            background: linear-gradient(135deg, var(--utah-navy), var(--utah-blue));
+            padding: 20px 24px;
+            color: #fff;
+        }
+        .flow-header h2 { margin: 0; font-size: 18px; }
+        .flow-header p { margin: 4px 0 0; font-size: 12px; opacity: 0.8; }
+        .flow-body { padding: 24px; }
+        .flow-footer {
+            padding: 16px 24px;
+            border-top: 1px solid #e5e5e5;
+            display: flex;
+            justify-content: space-between;
+            background: #fafaf9;
+        }
+        .flow-progress {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 12px 24px;
+            background: #fafaf9;
+            border-bottom: 1px solid #e5e5e5;
+        }
+        .flow-progress .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #c9c9c9;
+        }
+        .flow-progress .dot.active { background: var(--sf-blue); width: 10px; height: 10px; }
+        .flow-progress .dot.complete { background: var(--alert-green); }
+        .flow-progress .line {
+            flex: 1;
+            height: 2px;
+            background: #e5e5e5;
+        }
+        .flow-progress .line.complete { background: var(--alert-green); }
+    </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+// Demo data
+const COMMITMENTS = [
+    { id: 'CMT-2026-0001', patient: 'Martinez, Roberto J.', status: 'Emergency Hold', county: 'Salt Lake', caseworker: 'Sarah Chen', holdStart: new Date(Date.now() - 66*3600000), hoursRemaining: 6, type: 'Blue Sheet', lmha: 'Valley Behavioral Health' },
+    { id: 'CMT-2026-0002', patient: 'Thompson, David K.', status: 'Emergency Hold', county: 'Utah', caseworker: 'Michael Reyes', holdStart: new Date(Date.now() - 48*3600000), hoursRemaining: 24, type: 'Pink Sheet', lmha: 'Wasatch Behavioral Health' },
+    { id: 'CMT-2026-0003', patient: 'Williams, Amanda R.', status: 'Emergency Hold', county: 'Davis', caseworker: 'Sarah Chen', holdStart: new Date(Date.now() - 68*3600000), hoursRemaining: 4, type: 'Blue Sheet', lmha: 'Davis Behavioral Health' },
+    { id: 'CMT-2026-0004', patient: 'Chen, Michael T.', status: 'Court Hearing Pending', county: 'Weber', caseworker: 'James Park', holdStart: new Date(Date.now() - 72*3600000), hoursRemaining: 0, type: 'Blue Sheet', lmha: 'Weber Human Services' },
+    { id: 'CMT-2026-0005', patient: 'Johnson, Patricia L.', status: 'Committed', county: 'Salt Lake', caseworker: 'Sarah Chen', holdStart: new Date(Date.now() - 96*3600000), hoursRemaining: null, type: 'Blue Sheet', lmha: 'Valley Behavioral Health' },
+    { id: 'CMT-2026-0006', patient: 'Garcia, Luis M.', status: 'Emergency Hold', county: 'Washington', caseworker: 'Amy Nguyen', holdStart: new Date(Date.now() - 50*3600000), hoursRemaining: 22, type: 'Pink Sheet', lmha: 'Southwest Behavioral Health' },
+    { id: 'CMT-2026-0007', patient: 'Anderson, James W.', status: 'Discharged', county: 'Salt Lake', caseworker: 'Michael Reyes', holdStart: new Date(Date.now() - 120*3600000), hoursRemaining: null, type: 'Blue Sheet', lmha: 'Valley Behavioral Health' },
+    { id: 'CMT-2026-0008', patient: 'Davis, Crystal N.', status: 'Emergency Hold', county: 'Utah', caseworker: 'James Park', holdStart: new Date(Date.now() - 60*3600000), hoursRemaining: 12, type: 'Blue Sheet', lmha: 'Wasatch Behavioral Health' },
+];
+
+const AGENT_RESPONSES = {
+    'expiring': {
+        text: "I found 3 commitments expiring within the next 12 hours:",
+        cards: [
+            { patient: 'Williams, Amanda R.', id: 'CMT-2026-0003', hours: 4, county: 'Davis', color: 'red' },
+            { patient: 'Martinez, Roberto J.', id: 'CMT-2026-0001', hours: 6, county: 'Salt Lake', color: 'red' },
+            { patient: 'Davis, Crystal N.', id: 'CMT-2026-0008', hours: 12, county: 'Utah', color: 'yellow' },
+        ]
+    },
+    'summary': {
+        text: "Court Hearing Summary — CMT-2026-0001\n\nPatient: Martinez, Roberto J.\nDate of Emergency Hold: " + new Date(Date.now() - 66*3600000).toLocaleDateString() + "\nFiling Type: Blue Sheet (Form 34-1)\nFacility: Valley Behavioral Health\nCounty: Salt Lake\n\nBasis for Hold: Patient exhibited acute psychotic symptoms with verbal threats of self-harm. Examining physician Dr. Sarah Park certified substantial danger under Utah Code 26B-5-331.\n\nTime Remaining: ~6 hours\nRecommendation: Immediate court order required to extend commitment per 26B-5-332.",
+        cards: []
+    },
+    'status': {
+        text: "Current status for Martinez, Roberto J. (CMT-2026-0001):\n\nStatus: Emergency Hold (Active)\n72-Hour Clock: ~6 hours remaining\nFiled: Blue Sheet (Form 34-1)\nCaseworker: Sarah Chen\nLMHA: Valley Behavioral Health\nCourt Order: NOT RECEIVED\n\n⚠️ ALERT: This case requires immediate escalation. No court order has been filed and the hold expires in approximately 6 hours.",
+        cards: []
+    },
+    'default': {
+        text: "I can help you with commitment monitoring. Try asking me:\n• What holds are expiring soon?\n• Draft a court summary for a case\n• What's the status of a patient?\n• What cases need immediate attention?",
+        cards: []
+    }
+};
+
+function App() {
+    const [currentPage, setCurrentPage] = useState('home');
+    const [agentOpen, setAgentOpen] = useState(false);
+    const [toast, setToast] = useState(null);
+    const [notification, setNotification] = useState(null);
+    const [selectedCommitment, setSelectedCommitment] = useState(COMMITMENTS[0]);
+    const [flowStep, setFlowStep] = useState(1);
+
+    const showToast = (msg, type='success') => {
+        setToast({ msg, type });
+        setTimeout(() => setToast(null), 4000);
+    };
+
+    const showNotification = () => {
+        setNotification(true);
+        setTimeout(() => setNotification(null), 8000);
+    };
+
+    return (
+        <div>
+            <UtahBanner />
+            <GlobalHeader />
+            <NavBar currentPage={currentPage} setCurrentPage={setCurrentPage} />
+            <div className="page-container">
+                {currentPage === 'home' && <HomePage setCurrentPage={setCurrentPage} setSelectedCommitment={setSelectedCommitment} />}
+                {currentPage === 'commitments' && <CommitmentsListPage setCurrentPage={setCurrentPage} setSelectedCommitment={setSelectedCommitment} />}
+                {currentPage === 'record' && <CommitmentRecordPage commitment={selectedCommitment} showNotification={showNotification} showToast={showToast} />}
+                {currentPage === 'bluesheet' && <BlueSheetFlow step={flowStep} setStep={setFlowStep} showToast={showToast} setCurrentPage={setCurrentPage} setSelectedCommitment={setSelectedCommitment} />}
+                {currentPage === 'pinksheet' && <PinkSheetFlow showToast={showToast} setCurrentPage={setCurrentPage} />}
+                {currentPage === 'dashboard' && <DashboardPage />}
+            </div>
+
+            {agentOpen ? (
+                <AgentPanel onClose={() => setAgentOpen(false)} setCurrentPage={setCurrentPage} setSelectedCommitment={setSelectedCommitment} />
+            ) : (
+                <button className="agent-fab" onClick={() => setAgentOpen(true)} title="Guardian AI">
+                    <span className="pulse"></span>
+                    🛡️
+                </button>
+            )}
+
+            {toast && <div className={`toast ${toast.type}`}>{toast.type === 'success' ? '✓' : '⚠'} {toast.msg}</div>}
+            {notification && <CourtOrderNotification onClose={() => setNotification(null)} />}
+        </div>
+    );
+}
+
+function UtahBanner() {
+    return (
+        <div className="utah-banner">
+            <span className="beehive">🐝</span>
+            <span className="gov-text">STATE OF UTAH — DEPARTMENT OF HEALTH & HUMAN SERVICES — DIVISION OF SUBSTANCE ABUSE AND MENTAL HEALTH</span>
+        </div>
+    );
+}
+
+function GlobalHeader() {
+    return (
+        <header className="sf-global-header">
+            <svg className="logo" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" fill="#00A1E0"/>
+                <path d="M7 12c0-1.5.8-2.8 2-3.5-.3-.5-.5-1.1-.5-1.7 0-1.9 1.6-3.5 3.5-3.5 1.2 0 2.2.6 2.8 1.4.5-.3 1.1-.4 1.7-.4 2 0 3.5 1.6 3.5 3.5 0 .4-.1.8-.2 1.2.8.7 1.2 1.7 1.2 2.8 0 2-1.6 3.5-3.5 3.5-.4 0-.9-.1-1.2-.2-.6 1-1.7 1.6-2.8 1.6-1 0-1.9-.5-2.5-1.2-.3.1-.7.2-1 .2-1.9 0-3.5-1.6-3.5-3.5 0-.1 0-.2.1-.2z" fill="white"/>
+            </svg>
+            <div className="app-name">
+                Guardian AI
+                <span className="utah-badge">UTAH DHHS</span>
+            </div>
+            <div className="search-bar">
+                <input type="text" placeholder="Search commitments, patients, cases..." />
+            </div>
+            <div className="header-actions">
+                <button title="Favorites">☆</button>
+                <button title="New">+</button>
+                <button className="notif-badge" title="Notifications">🔔</button>
+                <button title="Setup">⚙</button>
+                <button title="Help">?</button>
+            </div>
+            <div className="avatar" title="Paul Coleman">PC</div>
+        </header>
+    );
+}
+
+function NavBar({ currentPage, setCurrentPage }) {
+    const items = [
+        { key: 'home', label: 'Home' },
+        { key: 'commitments', label: 'Commitments' },
+        { key: 'bluesheet', label: 'File Blue Sheet' },
+        { key: 'pinksheet', label: 'File Pink Sheet' },
+        { key: 'dashboard', label: 'Dashboard' },
+    ];
+    return (
+        <nav className="sf-nav-bar">
+            <div className="nav-items">
+                {items.map(item => (
+                    <a key={item.key} className={`nav-item ${currentPage === item.key ? 'active' : ''}`} onClick={() => setCurrentPage(item.key)}>
+                        {item.label}
+                    </a>
+                ))}
+            </div>
+        </nav>
+    );
+}
+
+function HomePage({ setCurrentPage, setSelectedCommitment }) {
+    const urgentCases = COMMITMENTS.filter(c => c.hoursRemaining !== null && c.hoursRemaining <= 12);
+    return (
+        <div>
+            <div className="page-header">
+                <h1>Guardian AI — Commitment Monitoring</h1>
+                <div className="actions">
+                    <button className="btn-brand" onClick={() => setCurrentPage('bluesheet')}>+ New Blue Sheet</button>
+                    <button className="btn-neutral" onClick={() => setCurrentPage('pinksheet')}>+ New Pink Sheet</button>
+                </div>
+            </div>
+
+            <div className="dashboard-grid">
+                <div className="card full-width">
+                    <div className="card-header" style={{background: 'linear-gradient(90deg, #FEE2E2, #fff)'}}>
+                        <h2 style={{color: '#8C0006'}}>⚠ Urgent — Holds Expiring Within 12 Hours</h2>
+                        <span className="badge badge-red">{urgentCases.length} Cases</span>
+                    </div>
+                    <div className="card-body" style={{padding: 0}}>
+                        <table className="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Case #</th>
+                                    <th>Patient</th>
+                                    <th>Hours Remaining</th>
+                                    <th>County</th>
+                                    <th>LMHA</th>
+                                    <th>Caseworker</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {urgentCases.sort((a,b) => a.hoursRemaining - b.hoursRemaining).map(c => (
+                                    <tr key={c.id}>
+                                        <td><a className="link" onClick={() => { setSelectedCommitment(c); setCurrentPage('record'); }}>{c.id}</a></td>
+                                        <td>{c.patient}</td>
+                                        <td>
+                                            <span className={`badge ${c.hoursRemaining <= 6 ? 'badge-red' : 'badge-yellow'}`}>
+                                                {c.hoursRemaining}h remaining
+                                            </span>
+                                        </td>
+                                        <td>{c.county}</td>
+                                        <td>{c.lmha}</td>
+                                        <td>{c.caseworker}</td>
+                                        <td><button className="btn-destructive" style={{padding:'4px 8px', fontSize:'11px'}}>Escalate</button></td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div>
+                    <div className="card" style={{marginBottom: 16}}>
+                        <div className="card-header"><h2>Active Holds by Status</h2></div>
+                        <div className="card-body">
+                            <div className="chart-placeholder">
+                                <div className="donut-chart"></div>
+                                <div className="donut-legend">
+                                    <div className="item"><div className="dot" style={{background: 'var(--alert-red)'}}></div> Emergency Hold (4)</div>
+                                    <div className="item"><div className="dot" style={{background: 'var(--alert-yellow)'}}></div> Court Hearing Pending (1)</div>
+                                    <div className="item"><div className="dot" style={{background: 'var(--alert-green)'}}></div> Committed (1)</div>
+                                    <div className="item"><div className="dot" style={{background: 'var(--sf-blue)'}}></div> Discharged (1)</div>
+                                    <div className="item"><div className="dot" style={{background: '#ECEBEA'}}></div> Voluntary (1)</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="card">
+                        <div className="card-header"><h2>Summary</h2></div>
+                        <div className="card-body" style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap: 8}}>
+                            <div className="stat-card urgent"><div className="number">4</div><div className="label">Active Holds</div></div>
+                            <div className="stat-card warning"><div className="number">3</div><div className="label">Expiring &lt;24h</div></div>
+                            <div className="stat-card"><div className="number">8</div><div className="label">Total Cases</div></div>
+                            <div className="stat-card"><div className="number">1</div><div className="label">Pending Court</div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="card">
+                    <div className="card-header"><h2>Commitments by County</h2></div>
+                    <div className="card-body">
+                        <div className="bar-chart">
+                            <div className="bar-col"><div className="bar" style={{height:'120px'}}></div><div className="bar-label">Salt Lake</div></div>
+                            <div className="bar-col"><div className="bar" style={{height:'80px'}}></div><div className="bar-label">Utah</div></div>
+                            <div className="bar-col"><div className="bar" style={{height:'40px'}}></div><div className="bar-label">Davis</div></div>
+                            <div className="bar-col"><div className="bar" style={{height:'40px'}}></div><div className="bar-label">Weber</div></div>
+                            <div className="bar-col"><div className="bar" style={{height:'30px'}}></div><div className="bar-label">Wash.</div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function CommitmentsListPage({ setCurrentPage, setSelectedCommitment }) {
+    const [filter, setFilter] = useState('all');
+    const filtered = filter === 'all' ? COMMITMENTS :
+        filter === 'active' ? COMMITMENTS.filter(c => c.status === 'Emergency Hold') :
+        filter === 'committed' ? COMMITMENTS.filter(c => c.status === 'Committed') :
+        COMMITMENTS.filter(c => c.status === 'Discharged');
+
+    return (
+        <div>
+            <div className="page-header">
+                <h1>Commitments</h1>
+                <div className="actions">
+                    <button className="btn-brand" onClick={() => setCurrentPage('bluesheet')}>+ New Blue Sheet</button>
+                </div>
+            </div>
+            <div className="card">
+                <div className="card-header">
+                    <div className="tab-group" style={{margin: 0, border: 'none'}}>
+                        <div className={`tab ${filter==='all'?'active':''}`} onClick={() => setFilter('all')}>All ({COMMITMENTS.length})</div>
+                        <div className={`tab ${filter==='active'?'active':''}`} onClick={() => setFilter('active')}>Emergency Holds ({COMMITMENTS.filter(c=>c.status==='Emergency Hold').length})</div>
+                        <div className={`tab ${filter==='committed'?'active':''}`} onClick={() => setFilter('committed')}>Committed ({COMMITMENTS.filter(c=>c.status==='Committed').length})</div>
+                        <div className={`tab ${filter==='discharged'?'active':''}`} onClick={() => setFilter('discharged')}>Discharged ({COMMITMENTS.filter(c=>c.status==='Discharged').length})</div>
+                    </div>
+                </div>
+                <div style={{padding:0}}>
+                    <table className="data-table">
+                        <thead>
+                            <tr>
+                                <th>Case Number</th>
+                                <th>Patient Name</th>
+                                <th>Status</th>
+                                <th>Filing Type</th>
+                                <th>County</th>
+                                <th>Hours Remaining</th>
+                                <th>Caseworker</th>
+                                <th>LMHA</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {filtered.map(c => (
+                                <tr key={c.id}>
+                                    <td><a className="link" onClick={() => { setSelectedCommitment(c); setCurrentPage('record'); }}>{c.id}</a></td>
+                                    <td>{c.patient}</td>
+                                    <td>
+                                        <span className={`badge ${c.status==='Emergency Hold'?'badge-red':c.status==='Court Hearing Pending'?'badge-yellow':c.status==='Committed'?'badge-blue':'badge-green'}`}>
+                                            {c.status}
+                                        </span>
+                                    </td>
+                                    <td>{c.type}</td>
+                                    <td>{c.county}</td>
+                                    <td>{c.hoursRemaining !== null ? <span className={`badge ${c.hoursRemaining<=12?'badge-red':c.hoursRemaining<=24?'badge-yellow':'badge-green'}`}>{c.hoursRemaining}h</span> : '—'}</td>
+                                    <td>{c.caseworker}</td>
+                                    <td>{c.lmha}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function CommitmentRecordPage({ commitment, showNotification, showToast }) {
+    const [activeTab, setActiveTab] = useState('details');
+    const c = commitment;
+    const urgencyClass = c.hoursRemaining !== null ? (c.hoursRemaining <= 6 ? 'urgent' : c.hoursRemaining <= 24 ? 'warning' : 'safe') : 'safe';
+
+    const simulateCourtOrder = () => {
+        showNotification();
+        showToast('Court Order received via MuleSoft — Clock stopped', 'success');
+    };
+
+    return (
+        <div>
+            <div className="page-header">
+                <h1>{c.id} — {c.patient}</h1>
+                <div className="actions">
+                    <button className="btn-neutral" onClick={simulateCourtOrder}>⚡ Simulate Court Order (MuleSoft)</button>
+                    <button className="btn-brand">Edit</button>
+                </div>
+            </div>
+
+            {c.hoursRemaining !== null && (
+                <div className={`countdown-hero ${urgencyClass}`}>
+                    <div className="countdown-label">72-Hour Legal Hold — Time Remaining</div>
+                    <CountdownTimer hours={c.hoursRemaining} />
+                    <div className="countdown-label" style={{marginTop: 8}}>
+                        Hold expires: {new Date(c.holdStart.getTime() + 72*3600000).toLocaleString()} (excl. weekends/holidays per Utah Code 26B-5-331)
+                    </div>
+                </div>
+            )}
+
+            <div className="progress-path">
+                <div className={`step ${c.status === 'Emergency Hold' ? 'active' : 'complete'}`}>Emergency Hold</div>
+                <div className={`step-connector ${['Court Hearing Pending','Committed','Discharged'].includes(c.status) ? 'complete' : ''}`}></div>
+                <div className={`step ${c.status === 'Court Hearing Pending' ? 'active' : ['Committed','Discharged'].includes(c.status) ? 'complete' : ''}`}>Court Hearing</div>
+                <div className={`step-connector ${['Committed','Discharged'].includes(c.status) ? 'complete' : ''}`}></div>
+                <div className={`step ${c.status === 'Committed' ? 'active' : c.status === 'Discharged' ? 'complete' : ''}`}>Committed</div>
+                <div className={`step-connector ${c.status === 'Discharged' ? 'complete' : ''}`}></div>
+                <div className={`step ${c.status === 'Discharged' ? 'active' : ''}`}>Discharged</div>
+            </div>
+
+            <div className="tab-group">
+                <div className={`tab ${activeTab==='details'?'active':''}`} onClick={() => setActiveTab('details')}>Details</div>
+                <div className={`tab ${activeTab==='timeline'?'active':''}`} onClick={() => setActiveTab('timeline')}>Activity Timeline</div>
+                <div className={`tab ${activeTab==='related'?'active':''}`} onClick={() => setActiveTab('related')}>Related Sheets</div>
+                <div className={`tab ${activeTab==='compliance'?'active':''}`} onClick={() => setActiveTab('compliance')}>Compliance</div>
+            </div>
+
+            {activeTab === 'details' && (
+                <div className="card">
+                    <div className="card-body">
+                        <div className="record-detail">
+                            <div className="field"><div className="label">Case Number</div><div className="value">{c.id}</div></div>
+                            <div className="field"><div className="label">Status</div><div className="value"><span className={`badge ${c.status==='Emergency Hold'?'badge-red':'badge-blue'}`}>{c.status}</span></div></div>
+                            <div className="field"><div className="label">Patient Name</div><div className="value">{c.patient}</div></div>
+                            <div className="field"><div className="label">Patient DOB</div><div className="value">03/15/1988</div></div>
+                            <div className="field"><div className="label">Filing Type</div><div className="value">{c.type} (Form 34-{c.type === 'Blue Sheet' ? '1' : '2'})</div></div>
+                            <div className="field"><div className="label">Hold Start</div><div className="value">{c.holdStart.toLocaleString()}</div></div>
+                            <div className="field"><div className="label">County</div><div className="value">{c.county}</div></div>
+                            <div className="field"><div className="label">LMHA</div><div className="value">{c.lmha}</div></div>
+                            <div className="field"><div className="label">Assigned Caseworker</div><div className="value">{c.caseworker}</div></div>
+                            <div className="field"><div className="label">Phone Call Completed</div><div className="value">✓ Yes (within 3 hrs of arrival)</div></div>
+                            <div className="field"><div className="label">Court Order Received</div><div className="value" style={{color:'var(--alert-red)'}}>✗ Not Received</div></div>
+                            <div className="field"><div className="label">Discharge Instructions</div><div className="value"><span className="badge badge-gray">Pending</span></div></div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {activeTab === 'timeline' && (
+                <div className="card">
+                    <div className="card-body">
+                        <div className="timeline-item">
+                            <div className="dot" style={{background:'var(--alert-red)'}}></div>
+                            <div className="content">
+                                <strong>Escalation Alert Sent</strong> — 48-hour mark reached. Notification sent to caseworker Sarah Chen.
+                                <div className="time">2 hours ago — System (Scheduled Flow)</div>
+                            </div>
+                        </div>
+                        <div className="timeline-item">
+                            <div className="dot" style={{background:'var(--alert-green)'}}></div>
+                            <div className="content">
+                                <strong>Phone Call Right Fulfilled</strong> — Patient exercised right to make phone call per 26B-5-331(6).
+                                <div className="time">{new Date(c.holdStart.getTime() + 2.5*3600000).toLocaleString()} — Sarah Chen</div>
+                            </div>
+                        </div>
+                        <div className="timeline-item">
+                            <div className="dot" style={{background:'var(--sf-blue)'}}></div>
+                            <div className="content">
+                                <strong>Patient Admitted</strong> — Arrived at {c.lmha}. Informed of commitment reason per statute.
+                                <div className="time">{new Date(c.holdStart.getTime() + 1*3600000).toLocaleString()} — Facility Staff</div>
+                            </div>
+                        </div>
+                        <div className="timeline-item">
+                            <div className="dot" style={{background:'var(--utah-navy)'}}></div>
+                            <div className="content">
+                                <strong>Emergency Hold Filed</strong> — {c.type} (Form 34-{c.type === 'Blue Sheet' ? '1' : '2'}) submitted. 72-hour clock started.
+                                <div className="time">{c.holdStart.toLocaleString()} — Officer J. Williams, Provo PD</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {activeTab === 'related' && (
+                <div className="card">
+                    <div className="related-list-header">
+                        <h3>Blue Sheets (1)</h3>
+                    </div>
+                    <table className="data-table">
+                        <thead><tr><th>Form</th><th>Filed By</th><th>Date</th><th>Certifying Physician</th><th>Status</th></tr></thead>
+                        <tbody>
+                            <tr>
+                                <td><a className="link">BS-2026-0001</a></td>
+                                <td>Officer J. Williams</td>
+                                <td>{c.holdStart.toLocaleDateString()}</td>
+                                <td>Dr. Sarah Park, MD</td>
+                                <td><span className="badge badge-green">Active</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div className="related-list-header" style={{marginTop: 16}}>
+                        <h3>White Sheets (Court Orders) (0)</h3>
+                    </div>
+                    <div style={{padding: '20px 16px', textAlign: 'center', color: '#706e6b', fontSize: 13}}>
+                        No court orders received. Awaiting judicial action via XChange/CORIS.
+                    </div>
+                </div>
+            )}
+
+            {activeTab === 'compliance' && (
+                <div className="card">
+                    <div className="card-body">
+                        <h3 style={{margin: '0 0 16px', fontSize: 14}}>Compliance Checklist — Utah Code 26B-5-331</h3>
+                        <div style={{display:'flex', flexDirection:'column', gap: 8}}>
+                            <ComplianceItem done={true} text="Patient informed of commitment reason" statute="26B-5-331(6)" />
+                            <ComplianceItem done={true} text="Phone call right within 3 hours of arrival" statute="26B-5-331(6)" />
+                            <ComplianceItem done={true} text="Right to see/communicate with attorney" statute="26B-5-331(6)" />
+                            <ComplianceItem done={false} text="Court order or voluntary admission before 72h expiry" statute="26B-5-331(3)" />
+                            <ComplianceItem done={false} text="Discharge instructions provided" statute="26B-5-331(8)" />
+                            <ComplianceItem done={false} text="48-hour post-discharge follow-up" statute="26B-5-331(8)" />
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
+function ComplianceItem({ done, text, statute }) {
+    return (
+        <div style={{display:'flex', alignItems:'center', gap: 10, padding: '8px 12px', background: done ? '#f0faf3' : '#fff8f0', borderRadius: 6, border: `1px solid ${done ? '#c8f0d4' : '#ffe0b2'}`}}>
+            <span style={{fontSize: 16}}>{done ? '✅' : '⬜'}</span>
+            <span style={{flex: 1, fontSize: 13}}>{text}</span>
+            <span style={{fontSize: 11, color: '#706e6b', fontStyle: 'italic'}}>{statute}</span>
+        </div>
+    );
+}
+
+function CountdownTimer({ hours }) {
+    const [time, setTime] = useState(hours * 3600);
+    useEffect(() => {
+        const interval = setInterval(() => setTime(t => Math.max(0, t - 1)), 1000);
+        return () => clearInterval(interval);
+    }, []);
+    const h = Math.floor(time / 3600);
+    const m = Math.floor((time % 3600) / 60);
+    const s = time % 60;
+    return (
+        <div className="countdown-value">
+            {String(h).padStart(2,'0')}:{String(m).padStart(2,'0')}:{String(s).padStart(2,'0')}
+        </div>
+    );
+}
+
+function BlueSheetFlow({ step, setStep, showToast, setCurrentPage, setSelectedCommitment }) {
+    const submitForm = () => {
+        showToast('Blue Sheet filed successfully — 72-hour clock started', 'success');
+        setTimeout(() => {
+            setSelectedCommitment(COMMITMENTS[0]);
+            setCurrentPage('record');
+        }, 1500);
+    };
+
+    return (
+        <div className="flow-screen">
+            <div className="flow-header">
+                <h2>📋 File Emergency Blue Sheet (Form 34-1)</h2>
+                <p>Utah Code 26B-5-331 — Temporary Commitment with Certification</p>
+            </div>
+            <div className="flow-progress">
+                <div className={`dot ${step >= 1 ? (step > 1 ? 'complete' : 'active') : ''}`}></div>
+                <div className={`line ${step > 1 ? 'complete' : ''}`}></div>
+                <div className={`dot ${step >= 2 ? (step > 2 ? 'complete' : 'active') : ''}`}></div>
+                <div className={`line ${step > 2 ? 'complete' : ''}`}></div>
+                <div className={`dot ${step >= 3 ? (step > 3 ? 'complete' : 'active') : ''}`}></div>
+                <div className={`line ${step > 3 ? 'complete' : ''}`}></div>
+                <div className={`dot ${step >= 4 ? 'active' : ''}`}></div>
+            </div>
+            <div className="flow-body">
+                <div className="mobile-form-warning">
+                    ⚖️ <strong>Legal Notice:</strong> Filing this form initiates a 72-hour emergency hold under Utah Code 26B-5-331. The patient must be informed of the reason for commitment and granted phone call rights within 3 hours.
+                </div>
+
+                {step === 1 && (
+                    <div>
+                        <div className="form-section">
+                            <h3>Patient Information</h3>
+                            <div className="form-row">
+                                <div className="form-field">
+                                    <label>Patient Full Name <span className="required">*</span></label>
+                                    <input type="text" defaultValue="Martinez, Roberto J." />
+                                </div>
+                                <div className="form-field">
+                                    <label>Date of Birth</label>
+                                    <input type="date" defaultValue="1988-03-15" />
+                                </div>
+                            </div>
+                            <div className="form-row">
+                                <div className="form-field">
+                                    <label>County <span className="required">*</span></label>
+                                    <select defaultValue="salt-lake">
+                                        <option value="">— Select —</option>
+                                        <option value="salt-lake">Salt Lake</option>
+                                        <option value="utah">Utah</option>
+                                        <option value="davis">Davis</option>
+                                        <option value="weber">Weber</option>
+                                        <option value="washington">Washington</option>
+                                    </select>
+                                </div>
+                                <div className="form-field">
+                                    <label>Receiving LMHA <span className="required">*</span></label>
+                                    <select defaultValue="valley">
+                                        <option value="">— Select —</option>
+                                        <option value="valley">Valley Behavioral Health</option>
+                                        <option value="wasatch">Wasatch Behavioral Health</option>
+                                        <option value="davis-bh">Davis Behavioral Health</option>
+                                        <option value="weber-hs">Weber Human Services</option>
+                                        <option value="southwest">Southwest Behavioral Health</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="form-section">
+                            <h3>Applicant (Informant) Information</h3>
+                            <div className="form-row">
+                                <div className="form-field">
+                                    <label>Applicant Name <span className="required">*</span></label>
+                                    <input type="text" defaultValue="Officer James Williams" />
+                                </div>
+                                <div className="form-field">
+                                    <label>Relationship to Patient</label>
+                                    <input type="text" defaultValue="Responding Officer" />
+                                </div>
+                            </div>
+                            <div className="form-row full">
+                                <div className="form-field">
+                                    <label>Address</label>
+                                    <input type="text" defaultValue="3400 S 900 E, Provo, UT 84606" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {step === 2 && (
+                    <div>
+                        <div className="form-section">
+                            <h3>Basis for Emergency Commitment</h3>
+                            <div className="form-row full">
+                                <div className="form-field">
+                                    <label>Circumstances leading to belief of substantial danger <span className="required">*</span></label>
+                                    <textarea rows="4" defaultValue="Patient exhibited acute psychotic symptoms including auditory hallucinations commanding self-harm. Patient was found on the overpass railing of I-15 at mile marker 263. Patient verbally stated intent to jump. Immediate intervention was required to prevent serious bodily injury or death." />
+                                </div>
+                            </div>
+                            <div className="form-row full">
+                                <div className="form-field">
+                                    <label>Specific nature of danger (check all that apply)</label>
+                                    <div style={{display:'flex', flexDirection:'column', gap: 6, marginTop: 4}}>
+                                        <label style={{fontWeight: 400, fontSize: 13}}><input type="checkbox" defaultChecked /> Suicide risk</label>
+                                        <label style={{fontWeight: 400, fontSize: 13}}><input type="checkbox" defaultChecked /> Serious bodily self-injury</label>
+                                        <label style={{fontWeight: 400, fontSize: 13}}><input type="checkbox" /> Inability to provide basic necessities</label>
+                                        <label style={{fontWeight: 400, fontSize: 13}}><input type="checkbox" /> Causing serious bodily injury to another</label>
+                                        <label style={{fontWeight: 400, fontSize: 13}}><input type="checkbox" /> Severe distress with impaired judgment</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {step === 3 && (
+                    <div>
+                        <div className="form-section">
+                            <h3>Physician / Designated Examiner Certification</h3>
+                            <p style={{fontSize: 12, color: '#706e6b', margin: '0 0 12px'}}>Per 26B-5-331(1)(a): Requires certification by licensed physician, PA, NP, or designated examiner who examined the patient within the 3-day period preceding certification.</p>
+                            <div className="form-row">
+                                <div className="form-field">
+                                    <label>Certifying Physician/Examiner <span className="required">*</span></label>
+                                    <input type="text" defaultValue="Dr. Sarah Park" />
+                                </div>
+                                <div className="form-field">
+                                    <label>Title <span className="required">*</span></label>
+                                    <select defaultValue="physician">
+                                        <option value="physician">Licensed Physician</option>
+                                        <option value="pa">Physician Assistant</option>
+                                        <option value="np">Nurse Practitioner</option>
+                                        <option value="de">Designated Examiner</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div className="form-row">
+                                <div className="form-field">
+                                    <label>Examination Date <span className="required">*</span></label>
+                                    <input type="date" defaultValue={new Date().toISOString().split('T')[0]} />
+                                </div>
+                                <div className="form-field">
+                                    <label>License Number</label>
+                                    <input type="text" defaultValue="UT-MD-44892" />
+                                </div>
+                            </div>
+                            <div className="form-row full">
+                                <div className="form-field">
+                                    <label>Clinical Opinion — Pertinent Data <span className="required">*</span></label>
+                                    <textarea rows="3" defaultValue="Patient presents with acute psychosis, auditory command hallucinations, and active suicidal ideation with plan. Based on my examination, patient poses substantial danger to self due to mental illness and requires immediate inpatient stabilization." />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {step === 4 && (
+                    <div>
+                        <div className="form-section">
+                            <h3>Emergency Contacts & Guardian Information</h3>
+                            <div className="form-row">
+                                <div className="form-field">
+                                    <label>Guardian/Family Name</label>
+                                    <input type="text" defaultValue="Maria Martinez (Mother)" />
+                                </div>
+                                <div className="form-field">
+                                    <label>Guardian/Family Phone</label>
+                                    <input type="tel" defaultValue="(801) 555-0142" />
+                                </div>
+                            </div>
+                            <div className="form-row full">
+                                <div className="form-field">
+                                    <label>Guardian/Family Address</label>
+                                    <input type="text" defaultValue="1520 E Center St, Provo, UT 84606" />
+                                </div>
+                            </div>
+                        </div>
+                        <div className="form-section">
+                            <h3>Review & Submit</h3>
+                            <div style={{background: '#f0faf3', border: '1px solid #c8f0d4', borderRadius: 6, padding: 16}}>
+                                <p style={{margin: 0, fontSize: 13, fontWeight: 600}}>Ready to file Blue Sheet (Form 34-1)</p>
+                                <p style={{margin: '8px 0 0', fontSize: 12, color: '#3e3e3c'}}>
+                                    Upon submission:<br/>
+                                    • A Commitment record will be created<br/>
+                                    • The 72-hour legal clock will start immediately<br/>
+                                    • The assigned caseworker will be notified<br/>
+                                    • A 3-hour phone call task will be created
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
+            <div className="flow-footer">
+                <button className="btn-neutral" onClick={() => setStep(Math.max(1, step - 1))} disabled={step === 1}>← Previous</button>
+                <span style={{fontSize: 12, color: '#706e6b', alignSelf: 'center'}}>Step {step} of 4</span>
+                {step < 4 ? (
+                    <button className="btn-brand" onClick={() => setStep(step + 1)}>Next →</button>
+                ) : (
+                    <button className="btn-brand" onClick={submitForm} style={{background: 'var(--alert-green)'}}>✓ Submit Blue Sheet</button>
+                )}
+            </div>
+        </div>
+    );
+}
+
+function PinkSheetFlow({ showToast, setCurrentPage }) {
+    const [submitted, setSubmitted] = useState(false);
+
+    const submitForm = () => {
+        setSubmitted(true);
+        showToast('Pink Sheet filed — 72-hour clock started', 'success');
+        setTimeout(() => setCurrentPage('commitments'), 2000);
+    };
+
+    return (
+        <div className="flow-screen">
+            <div className="flow-header" style={{background: 'linear-gradient(135deg, #4A1942, #8B2252)'}}>
+                <h2>📋 File Emergency Pink Sheet (Form 34-2)</h2>
+                <p>Utah Code 26B-5-331(1)(b) — Temporary Commitment Without Certification (Officer Observation)</p>
+            </div>
+            <div className="flow-body">
+                <div className="mobile-form-warning">
+                    ⚖️ <strong>Officer Pathway:</strong> This form is for peace officers or mental health officers who directly observed conduct giving probable cause to believe the adult has mental illness AND poses substantial danger.
+                </div>
+                <div className="form-section">
+                    <h3>Officer Information</h3>
+                    <div className="form-row">
+                        <div className="form-field">
+                            <label>Officer Name <span className="required">*</span></label>
+                            <input type="text" defaultValue="Sgt. David Ramirez" />
+                        </div>
+                        <div className="form-field">
+                            <label>Officer Type <span className="required">*</span></label>
+                            <select defaultValue="peace">
+                                <option value="peace">Peace Officer</option>
+                                <option value="mental-health">Mental Health Officer</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div className="form-row">
+                        <div className="form-field">
+                            <label>Badge/ID Number</label>
+                            <input type="text" defaultValue="PPD-4821" />
+                        </div>
+                        <div className="form-field">
+                            <label>Agency</label>
+                            <input type="text" defaultValue="Provo Police Department" />
+                        </div>
+                    </div>
+                </div>
+                <div className="form-section">
+                    <h3>Patient & Observation</h3>
+                    <div className="form-row">
+                        <div className="form-field">
+                            <label>Patient Name <span className="required">*</span></label>
+                            <input type="text" placeholder="Full name of proposed patient" />
+                        </div>
+                        <div className="form-field">
+                            <label>County</label>
+                            <select><option value="utah">Utah</option><option value="salt-lake">Salt Lake</option></select>
+                        </div>
+                    </div>
+                    <div className="form-row full">
+                        <div className="form-field">
+                            <label>Facts that called patient to officer's attention <span className="required">*</span></label>
+                            <textarea rows="3" placeholder="Describe specific facts and circumstances..." />
+                        </div>
+                    </div>
+                    <div className="form-row full">
+                        <div className="form-field">
+                            <label>Specific nature of the danger <span className="required">*</span></label>
+                            <textarea rows="2" placeholder="What danger does the patient pose?" />
+                        </div>
+                    </div>
+                    <div className="form-row full">
+                        <div className="form-field">
+                            <label>Summary of officer observations <span className="required">*</span></label>
+                            <textarea rows="3" placeholder="Describe conduct giving probable cause..." />
+                        </div>
+                    </div>
+                    <div className="form-row full">
+                        <div className="form-field">
+                            <label style={{fontWeight: 400, fontSize: 13}}>
+                                <input type="checkbox" /> Officer exercised discretion NOT to take into custody (26B-5-331(5))
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div className="flow-footer">
+                <button className="btn-neutral" onClick={() => setCurrentPage('home')}>Cancel</button>
+                <button className="btn-brand" onClick={submitForm} style={{background: '#8B2252'}}>✓ Submit Pink Sheet</button>
+            </div>
+        </div>
+    );
+}
+
+function DashboardPage() {
+    return (
+        <div>
+            <div className="page-header">
+                <h1>Statewide Commitment Dashboard</h1>
+                <div className="actions">
+                    <button className="btn-neutral">⟳ Refresh</button>
+                    <button className="btn-neutral">📊 Subscribe</button>
+                </div>
+            </div>
+            <div style={{display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 16}}>
+                <div className="card"><div className="stat-card urgent"><div className="number">4</div><div className="label">Active Emergency Holds</div></div></div>
+                <div className="card"><div className="stat-card warning"><div className="number">3</div><div className="label">Expiring &lt; 24 Hours</div></div></div>
+                <div className="card"><div className="stat-card"><div className="number">1</div><div className="label">Pending Court Orders</div></div></div>
+                <div className="card"><div className="stat-card" style={{color:'var(--alert-green)'}}><div className="number" style={{color:'var(--alert-green)'}}>98%</div><div className="label">Compliance Rate</div></div></div>
+            </div>
+            <div className="dashboard-grid">
+                <div className="card">
+                    <div className="card-header"><h2>Active Holds — Countdown (Sorted by Urgency)</h2></div>
+                    <div style={{padding: 0}}>
+                        <table className="data-table">
+                            <thead><tr><th>Case</th><th>Patient</th><th>Time Left</th><th>County</th><th>Filed</th><th>Status</th></tr></thead>
+                            <tbody>
+                                {COMMITMENTS.filter(c => c.status === 'Emergency Hold').sort((a,b) => a.hoursRemaining - b.hoursRemaining).map(c => (
+                                    <tr key={c.id}>
+                                        <td><a className="link">{c.id}</a></td>
+                                        <td>{c.patient}</td>
+                                        <td><span className={`badge ${c.hoursRemaining <= 6 ? 'badge-red' : c.hoursRemaining <= 12 ? 'badge-yellow' : 'badge-green'}`}>{c.hoursRemaining}h</span></td>
+                                        <td>{c.county}</td>
+                                        <td>{c.holdStart.toLocaleDateString()}</td>
+                                        <td><span className="badge badge-red">Active Hold</span></td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div>
+                    <div className="card" style={{marginBottom: 16}}>
+                        <div className="card-header"><h2>By Status</h2></div>
+                        <div className="card-body">
+                            <div className="chart-placeholder" style={{height: 150}}>
+                                <div className="donut-chart" style={{width: 120, height: 120}}></div>
+                                <div className="donut-legend" style={{fontSize: 11}}>
+                                    <div className="item"><div className="dot" style={{background:'var(--alert-red)', width: 8, height: 8}}></div> Hold (4)</div>
+                                    <div className="item"><div className="dot" style={{background:'var(--alert-yellow)', width: 8, height: 8}}></div> Pending (1)</div>
+                                    <div className="item"><div className="dot" style={{background:'var(--alert-green)', width: 8, height: 8}}></div> Committed (1)</div>
+                                    <div className="item"><div className="dot" style={{background:'var(--sf-blue)', width: 8, height: 8}}></div> Discharged (1)</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="card">
+                        <div className="card-header"><h2>By County</h2></div>
+                        <div className="card-body">
+                            <div className="bar-chart" style={{height: 120}}>
+                                <div className="bar-col"><div className="bar" style={{height:'90px', background:'var(--utah-blue)'}}></div><div className="bar-label">SL</div></div>
+                                <div className="bar-col"><div className="bar" style={{height:'60px', background:'var(--utah-blue)'}}></div><div className="bar-label">UT</div></div>
+                                <div className="bar-col"><div className="bar" style={{height:'30px', background:'var(--utah-blue)'}}></div><div className="bar-label">DA</div></div>
+                                <div className="bar-col"><div className="bar" style={{height:'30px', background:'var(--utah-blue)'}}></div><div className="bar-label">WE</div></div>
+                                <div className="bar-col"><div className="bar" style={{height:'20px', background:'var(--utah-blue)'}}></div><div className="bar-label">WA</div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div className="card" style={{marginTop: 16}}>
+                <div className="card-header"><h2>Recent Court Orders (MuleSoft / XChange)</h2></div>
+                <div style={{padding: 0}}>
+                    <table className="data-table">
+                        <thead><tr><th>Court Case #</th><th>Judge</th><th>Patient</th><th>Order Date</th><th>Duration</th><th>Source</th><th>Status</th></tr></thead>
+                        <tbody>
+                            <tr>
+                                <td><a className="link">260500123</a></td>
+                                <td>Hon. Margaret Liu</td>
+                                <td>Johnson, Patricia L.</td>
+                                <td>05/05/2026</td>
+                                <td>180 days</td>
+                                <td><span style={{fontSize: 11, color: 'var(--sf-blue)'}}>MuleSoft / XChange</span></td>
+                                <td><span className="badge badge-green">Processed</span></td>
+                            </tr>
+                            <tr>
+                                <td><a className="link">260500098</a></td>
+                                <td>Hon. Robert Torres</td>
+                                <td>Anderson, James W.</td>
+                                <td>05/02/2026</td>
+                                <td>90 days</td>
+                                <td><span style={{fontSize: 11, color: 'var(--sf-blue)'}}>MuleSoft / XChange</span></td>
+                                <td><span className="badge badge-green">Processed</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function AgentPanel({ onClose, setCurrentPage, setSelectedCommitment }) {
+    const [messages, setMessages] = useState([
+        { role: 'agent', text: "Hello! I'm Guardian AI, your civil commitment monitoring assistant. I'm actively watching all open commitments across Utah. How can I help you today?" }
+    ]);
+    const [input, setInput] = useState('');
+    const [typing, setTyping] = useState(false);
+    const chatRef = useRef(null);
+
+    useEffect(() => {
+        if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight;
+    }, [messages]);
+
+    const sendMessage = (text) => {
+        if (!text.trim()) return;
+        const userMsg = text || input;
+        setMessages(m => [...m, { role: 'user', text: userMsg }]);
+        setInput('');
+        setTyping(true);
+
+        setTimeout(() => {
+            let response;
+            const lower = userMsg.toLowerCase();
+            if (lower.includes('expir') || lower.includes('urgent') || lower.includes('attention') || lower.includes('6 hours')) {
+                response = AGENT_RESPONSES.expiring;
+            } else if (lower.includes('summary') || lower.includes('draft') || lower.includes('court hearing')) {
+                response = AGENT_RESPONSES.summary;
+            } else if (lower.includes('status') || lower.includes('martinez') || lower.includes('patient')) {
+                response = AGENT_RESPONSES.status;
+            } else {
+                response = AGENT_RESPONSES.default;
+            }
+            setTyping(false);
+            setMessages(m => [...m, { role: 'agent', text: response.text, cards: response.cards }]);
+        }, 1500);
+    };
+
+    return (
+        <div className="assistant-panel">
+            <div className="panel-header">
+                <div className="agent-avatar">🛡️</div>
+                <div className="agent-info">
+                    <h3>Guardian AI</h3>
+                    <p>Civil Commitment Monitor — Utah DHHS</p>
+                </div>
+                <button className="close-btn" onClick={onClose}>✕</button>
+            </div>
+            <div className="chat-body" ref={chatRef}>
+                {messages.map((msg, i) => (
+                    <div key={i} className={`chat-msg ${msg.role}`}>
+                        <div style={{whiteSpace: 'pre-wrap'}}>{msg.text}</div>
+                        {msg.cards && msg.cards.map((card, j) => (
+                            <div key={j} className={`urgency-card ${card.color === 'yellow' ? 'yellow' : card.color === 'green' ? 'green' : ''}`}>
+                                <strong>{card.patient}</strong><br/>
+                                <span style={{fontSize: 11}}>{card.id} • {card.county} County • <strong>{card.hours}h remaining</strong></span>
+                            </div>
+                        ))}
+                    </div>
+                ))}
+                {typing && <div className="chat-msg agent" style={{opacity: 0.6}}>Guardian AI is thinking...</div>}
+            </div>
+            <div className="suggested-prompts">
+                <button onClick={() => sendMessage("What holds are expiring in the next 6 hours?")}>Expiring holds</button>
+                <button onClick={() => sendMessage("Draft court hearing summary for CMT-2026-0001")}>Court summary</button>
+                <button onClick={() => sendMessage("What's the status of Martinez?")}>Check status</button>
+                <button onClick={() => sendMessage("What cases need immediate attention?")}>Urgent cases</button>
+            </div>
+            <div className="chat-input">
+                <input
+                    value={input}
+                    onChange={e => setInput(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && sendMessage(input)}
+                    placeholder="Ask Guardian AI..."
+                />
+                <button onClick={() => sendMessage(input)}>→</button>
+            </div>
+        </div>
+    );
+}
+
+function CourtOrderNotification({ onClose }) {
+    return (
+        <div className="notification-popup">
+            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
+                <h4>✓ Court Order Received</h4>
+                <button onClick={onClose} style={{background:'none',border:'none',cursor:'pointer',fontSize:16}}>✕</button>
+            </div>
+            <p style={{fontSize: 13, color: '#080707', margin: '4px 0'}}>
+                <strong>White Sheet — Case #260500156</strong><br/>
+                Judge: Hon. Katherine Reyes<br/>
+                Patient: Martinez, Roberto J. (CMT-2026-0001)<br/>
+                Duration: 180 days<br/>
+                <span style={{color: 'var(--alert-green)', fontWeight: 700}}>✓ 72-Hour Clock STOPPED</span>
+            </p>
+            <p className="source">Source: MuleSoft → XChange/CORIS (Utah AOC Court System)</p>
+            <p style={{fontSize: 11, color: '#706e6b', margin: '8px 0 0'}}>
+                Renewal review date auto-set: {new Date(Date.now() + 166*86400000).toLocaleDateString()}<br/>
+                Commitment status updated to: Court Hearing Pending → Committed
+            </p>
+        </div>
+    );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
