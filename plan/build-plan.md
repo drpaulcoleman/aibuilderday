@@ -356,6 +356,8 @@ Full statute text saved in `docs/legal-reference.md`. Key findings that change t
 8. **Clear and convincing evidence standard** — informational only, but include in generated court summaries.
 9. **Blue Sheet (34-1) requires TWO signers**: informant (front) + certifying physician (back). Pink Sheet (34-2) requires ONE signer: peace officer or mental health officer.
 10. **Officer discretion NOT to commit** — if exercised, must document. Add `Officer_Discretion_Exercised__c` checkbox + `Discretion_Reason__c` on Pink Sheet.
+11. **HB 203 criminal-charge pathway (2024)** — individuals charged with a criminal offense and found incompetent to proceed due to mental illness now meet civil commitment criteria. Track with `Criminal_Charge_Pathway__c` checkbox for legislative reporting.
+12. **Officer release notification (2024 amendment)** — LMHA must notify the committing peace officer or mental health officer upon a patient's release from civil commitment. Track with `Release_Notification_Sent__c` + `Release_Notification_Date__c`.
 
 ---
 
@@ -410,6 +412,9 @@ sf project deploy start -o aibuilder -d ./build/force-app/main/default/objects
 - `Discharge_Instructions_Status__c` (Picklist: Pending / Provided / Refused)
 - `Follow_Up_Due__c` (Formula: Discharge_Date + 48 hours)
 - `Follow_Up_Completed__c` (Checkbox)
+- `Criminal_Charge_Pathway__c` (Checkbox — per HB 203 2024: patient was charged with criminal offense and found incompetent to proceed due to mental illness; used for legislative tracking)
+- `Release_Notification_Sent__c` (Checkbox — per 2024 amendments: LMHA must notify committing officer upon release)
+- `Release_Notification_Date__c` (DateTime — when officer was notified)
 - `Related_Blue_Sheet__c`, `Related_Pink_Sheet__c`, `Related_White_Sheet__c` (Lookups)
 
 ### Key Fields — Blue_Sheet__c (Form 34-1 — With Certification)
@@ -718,13 +723,19 @@ Judges will evaluate vision + feasibility + demo quality. They understand not ev
 
 | Time | Beat | What's Shown | Presenter Notes |
 |------|------|--------------|-----------------|
-| 0:00–0:30 | Hook | Architecture slide | "It's 2 AM in Provo..." story. Don't open Salesforce yet. |
+| 0:00–0:30 | Hook | Architecture slide | Stats-driven opener (see hook text below). Don't open Salesforce yet. |
 | 0:30–1:30 | File a Blue Sheet | Run Screen Flow live | Show mobile-responsive form. Submit. Show record page with countdown starting. |
 | 1:30–2:15 | Guardian AI queries | Agent panel on record page | Type: "What holds expire in the next 6 hours?" Show live response with case list. |
 | 2:15–2:45 | Court order arrives | Click "Simulate Court Order" button | White Sheet created → clock stops → status changes → notification appears. "MuleSoft just delivered this from XChange/CORIS." |
 | 2:45–3:15 | AI drafts summary | Agent panel | Type: "Draft court hearing summary for this case" → generated document appears. |
 | 3:15–3:45 | Dashboard | Switch to dashboard tab | Show statewide view: donut chart, county breakdown, urgent cases list. |
 | 3:45–4:00 | Close | Back to architecture slide | "HB 137 deadlines are 2025/2026. Guardian AI is ready. Questions?" |
+
+### Hook Text (0:00–0:30)
+
+> "Right now in Utah there are nearly 1,400 people on active civil commitment — up 42% in seven years. 87% of them are managed in the community, not hospitals. The state is short 300 to 400 beds and 8,000 behavioral health professionals. One in four officer-involved shootings involves a person with mental illness. When a caseworker files an emergency hold at 2 AM, a 72-hour legal clock starts — and if it expires without a court order, the patient must be released. Today, that clock is tracked on paper and spreadsheets. Guardian AI changes that."
+
+*(Source: DHHS/SUMH Civil Commitment Capacity Report, Oct 2024; Utah current-state data 2025/2026)*
 
 ### Timing Tips
 - The hook is spoken over a static slide — no clicking, no waiting for page loads
